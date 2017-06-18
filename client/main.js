@@ -317,15 +317,67 @@ $(function() {
     updateTyping();
   });
 
+//The actual Game of Life
+
+var BOARD_WIDTH = 64;
+var BOARD_HEIGHT = 64;
+var CELL_SIZE = 10;
+var CELL_MARGIN = 3;
+var CELL_OFFSET = CELL_MARGIN + CELL_SIZE;
+var TICK = 100;
+
+var board = [];
+
+var time = new Date().getTime();
+var timeSinceTick = 0;
+function gameLoop(){
+  requestAnimationFrame(gameLoop);
+  var now = new Date().getTime();
+  var dt = now - time;
+  time = now;
+  timeSinceTick += dt;
+
+  if(timeSinceTick > TICK){
+    timeSinceTick -= TICK;
+  }
+
+  render();
+}
+
+function render(){
+  
+  ctx.clearRect(0,0, gameCanvas.width, gameCanvas.height);
+
+  //Draw the cells
+  for (var x = 0; x < BOARD_WIDTH; x++) {
+    for (var y = 0; y < BOARD_HEIGHT; y++) {
+      var color = board[x][y] ? '#ccc' : '#333';
+      if(board[x][y]){
+
+      }
+      ctx.fillStyle = color;
+      ctx.fillRect(x * CELL_OFFSET + CELL_MARGIN, y * CELL_OFFSET + CELL_MARGIN, CELL_SIZE,CELL_SIZE);
+    }   
+  }
+}
 
 $(document).ready(function() {
 
   gameCanvas.width = 800;
   gameCanvas.height = 600;
-  
+
   username = localStorage.getItem('username');
 
+  //Initialize an empty board
+  for (var i = 0; i < BOARD_WIDTH; i++) {
+    board[i] = 
+    new Array(BOARD_HEIGHT).fill(false);
+  }
+
+  gameLoop();
+
   joinServer(false);
+
 
   });
 
