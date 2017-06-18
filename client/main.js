@@ -231,7 +231,7 @@ $(function() {
   });
 
   // Whenever the server emits 'new message', update the chat body
-  socket.on('new message', function (data) {
+  socket.on('new_message', function (data) {
     addChatMessage(data);
   });
 
@@ -272,6 +272,19 @@ $(function() {
   socket.on('reconnect_error', function () {
     log('attempt to reconnect has failed');
   });
+
+  
+  socket.on('full_update', function (data) {
+    console.log("Recieved full update");
+    board = data.cellArray;
+  });
+
+  socket.on('game_update', function (data) {
+    console.log("Recieved game update");
+    console.log(data.cells);
+    updateCells(data.cells);
+  });
+
 
   //Click events
 
@@ -368,34 +381,26 @@ var patterns = [[[0,0]],[[-1,1],[0,1],[1,1],[1,0],[0,-1]]];
 var pattern = patterns[1];
 function placeCells(){
 
+  updatedCells = [];
   for (var i = 0; i < pattern.length; i++) {
     
     var [x,y] = pattern[i];
-    board[mouseX+x][mouseY+y] = true;
+    x += mouseX;
+    y += mouseY;
 
+    board[x][y] = true;
+    updatedCells.push([x,y])
   }
+
+  socket.emit('placed_cells', {
+      cells: updatedCells
+    });
 }
 
-function updateCells(){
-  updated = [];
-  for (var x = 0; x < BOARD_WIDTH; x++) {
-    for (var y = 0; y < BOARD_HEIGHT; y++) {
-      //Possible neighbour coordinates with wrap-around
-      var x1 = (x-1) & (BOARD_WIDTH-1);
-      var x2 = (x+1) & (BOARD_WIDTH-1);
-      var y1 = (y-1) & (BOARD_HEIGHT-1);
-      var y2 = (y+1) & (BOARD_HEIGHT-1);
-      var n =   board[x1][y1] + board[x][y1] + board[x2][y1] 
-              + board[x1][y] /*board[x][y]*/ + board[x2][y] 
-              + board[x1][y2] + board[x][y2] + board[x2][y2];
-      
-      if((board[x][y] && (n!=2 && n!=3)) || !board[x][y] && n==3){
-        updated.push([x,y]);
-      } 
-    }
-  }
-  for (var i = 0; i < updated.length; i++) {
-    var [x,y] = updated[i];
+function updateCells(cells){
+   
+  for (var i = 0; i < cells.length; i++) {
+    var [x,y] = cells[i];
     board[x][y] = !board[x][y];
 
   }
@@ -434,7 +439,7 @@ function render(){
 
   }
   ctx.globalAlpha = 1.0;
-  
+
 }
 
 var time = new Date().getTime();
@@ -445,13 +450,15 @@ function gameLoop(){
   var now = new Date().getTime();
   var dt = now - time;
   time = now;
+  
+  /*
   timeSinceTick += dt;
 
   if(timeSinceTick > TICK){
     timeSinceTick -= TICK;
 
     updateCells();
-  }
+  }*/
 
   render();
 }

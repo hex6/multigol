@@ -31,9 +31,9 @@ io.on('connection', function (socket) {
   var addedUser = false;
 
   // when the client emits 'new message', this listens and executes
-  socket.on('new message', function (data) {
+  socket.on('new_message', function (data) {
     // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', {
+    socket.broadcast.emit('new_message', {
       username: socket.username,
       message: data
     });
@@ -55,6 +55,11 @@ io.on('connection', function (socket) {
       username: socket.username,
       playerCount: playerCount
     });
+
+    socket.emit('full_update', {
+      cellArray: board
+    });
+
   });
 
   //Player sends a request to create a game lobby
@@ -75,6 +80,7 @@ io.on('connection', function (socket) {
     coordinator.lobbyCount++;
 
     console.log(coordinator.lobbyCount);
+
     io.emit('lobby_created', {
       username: socket.username,
       lobbyID: lobbyID
@@ -108,4 +114,101 @@ io.on('connection', function (socket) {
       });
     }
   });
+
+  //Game events
+
+  socket.on('placed_cells', function (data) {
+
+    placeCells(data.cells)
+    socket.broadcast.emit('game_update', {
+      cells: data.cells
+    });
+  });
+
+  //The actual Game of Life
+
+var BOARD_WIDTH = 64;
+var BOARD_HEIGHT = 64;
+var CELL_SIZE = 10;
+var CELL_MARGIN = 3;
+var CELL_OFFSET = CELL_MARGIN + CELL_SIZE;
+var TICK = 100;
+
+var board = [];
+
+function placeCells(cells){
+
+  for (var i = 0; i < cells.length; i++) {
+    
+    var [x,y] = cells[i];
+    board[x][y] = true;
+
+  }
+}
+
+function updateCells(){
+  updated = [];
+  for (var x = 0; x < BOARD_WIDTH; x++) {
+    for (var y = 0; y < BOARD_HEIGHT; y++) {
+      //Possible neighbour coordinates with wrap-around
+      var x1 = (x-1) & (BOARD_WIDTH-1);
+      var x2 = (x+1) & (BOARD_WIDTH-1);
+      var y1 = (y-1) & (BOARD_HEIGHT-1);
+      var y2 = (y+1) & (BOARD_HEIGHT-1);
+      var n =   board[x1][y1] + board[x][y1] + board[x2][y1] 
+              + board[x1][y] /*board[x][y]*/ + board[x2][y] 
+              + board[x1][y2] + board[x][y2] + board[x2][y2];
+      
+      if((board[x][y] && (n!=2 && n!=3)) || !board[x][y] && n==3){
+        updated.push([x,y]);
+      } 
+    }
+  }
+  for (var i = 0; i < updated.length; i++) {
+    var [x,y] = updated[i];
+    board[x][y] = !board[x][y];
+
+  }
+  
+  if(updated.length > 0){
+
+    socket.broadcast.emit('game_update', {
+      cells: updated
+      });
+  }
+}
+
+
+//Game loops
+
+var time = new Date().getTime();
+var timeSinceTick = 0;
+
+function gameLoop(){
+  var now = new Date().getTime();
+  var dt = now - time;
+  time = now;
+  timeSinceTick += dt;
+
+  if(timeSinceTick > TICK){
+    timeSinceTick -= TICK;
+
+    updateCells();
+  }
+  setTimeout(gameLoop,1000);
+}
+
+function initGame(){
+
+  //Initialize an empty board
+  for (var i = 0; i < BOARD_WIDTH; i++) {
+    board[i] = 
+    new Array(BOARD_HEIGHT).fill(false);
+  }
+
+  gameLoop();
+}
+
+initGame();
+
 });
