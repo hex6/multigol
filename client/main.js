@@ -376,6 +376,32 @@ function placeCells(){
   }
 }
 
+function updateCells(){
+  updated = [];
+  for (var x = 0; x < BOARD_WIDTH; x++) {
+    for (var y = 0; y < BOARD_HEIGHT; y++) {
+      //Possible neighbour coordinates with wrap-around
+      var x1 = (x-1) & (BOARD_WIDTH-1);
+      var x2 = (x+1) & (BOARD_WIDTH-1);
+      var y1 = (y-1) & (BOARD_HEIGHT-1);
+      var y2 = (y+1) & (BOARD_HEIGHT-1);
+      var n =   board[x1][y1] + board[x][y1] + board[x2][y1] 
+              + board[x1][y] /*board[x][y]*/ + board[x2][y] 
+              + board[x1][y2] + board[x][y2] + board[x2][y2];
+      
+      if((board[x][y] && (n!=2 && n!=3)) || !board[x][y] && n==3){
+        updated.push([x,y]);
+      } 
+    }
+  }
+  for (var i = 0; i < updated.length; i++) {
+    var [x,y] = updated[i];
+    board[x][y] = !board[x][y];
+
+  }
+}
+
+
 //Game loops
 
 function render(){
@@ -407,6 +433,8 @@ function gameLoop(){
 
   if(timeSinceTick > TICK){
     timeSinceTick -= TICK;
+
+    updateCells();
   }
 
   render();
