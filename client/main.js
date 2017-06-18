@@ -293,6 +293,15 @@ $(function() {
     $inputMessage.focus();
   });
 
+  // Misc events
+
+  function onResize(e){
+
+    gameCanvas.width = gameCanvas.parentNode.offsetWidth;
+    gameCanvas.height = gameCanvas.parentNode.offsetHeight;
+
+  }
+
   // Keyboard events
 
   $window.keydown(function (event) {
@@ -362,17 +371,20 @@ function render(){
 }
 
 $(document).ready(function() {
-
-  gameCanvas.width = 800;
-  gameCanvas.height = 600;
+  
+  setTimeout(function(){
+    gameCanvas.width = gameCanvas.parentNode.offsetWidth;
+    gameCanvas.height = gameCanvas.parentNode.offsetHeight;
+  }, 1);
 
   username = localStorage.getItem('username');
 
   //Initialize an empty board
   for (var i = 0; i < BOARD_WIDTH; i++) {
-    board[i] = 
-    new Array(BOARD_HEIGHT).fill(false);
+    board[i] = new Array(BOARD_HEIGHT).fill(false);
   }
+
+  window.addEventListener('resize', onResize, false);
 
   gameLoop();
 
