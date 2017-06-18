@@ -1,0 +1,24 @@
+{
+  "name": "multigol",
+  "version": "1.0.0",
+  "description": "Multiplayer version of Conway's Game of Life",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hex6/multigol.git"
+  },
+  "author": "Niclas Ogeryd <n.ogeryd@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hex6/multigol/issues"
+  },
+  "homepage": "https://github.com/hex6/multigol#readme",
+  "dependencies": {
+    "express": "^4.15.3",
+    "socket.io": "^2.0.3"
+  }
+
+}
