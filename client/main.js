@@ -419,6 +419,22 @@ function render(){
       ctx.fillRect(x * CELL_OFFSET + CELL_MARGIN, y * CELL_OFFSET + CELL_MARGIN, CELL_SIZE,CELL_SIZE);
     }   
   }
+
+  //Draw mouse selection
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#eee';
+
+  var xPos = mouseX * CELL_OFFSET + CELL_MARGIN;
+  var yPos = mouseY * CELL_OFFSET + CELL_MARGIN;
+
+  for (var i = 0; i < pattern.length; i++) {
+    
+    [x,y] = pattern[i];
+    ctx.fillRect(xPos + x*CELL_OFFSET, yPos +y*CELL_OFFSET, CELL_SIZE,CELL_SIZE);
+
+  }
+  ctx.globalAlpha = 1.0;
+  
 }
 
 var time = new Date().getTime();
