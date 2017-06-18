@@ -326,6 +326,33 @@ $(function() {
     updateTyping();
   });
 
+  //Mouse events
+  var mouseX = 0;
+  var mouseY = 0;
+  
+  function onMouseMove(e){
+    mouseX = (e.clientX - gameCanvas.offsetLeft);
+    mouseX = ~~(mouseX/CELL_OFFSET);
+    
+    mouseY = e.clientY - gameCanvas.offsetTop;
+    mouseY = ~~(mouseY/CELL_OFFSET);
+
+  }
+
+  var isMouseDown = false;
+  function onMouseDown(e){
+
+      isMouseDown = true;
+
+      placeCells();
+
+  }
+
+  function onMouseUp(e){
+
+      isMouseDown = false;
+  }
+
 //The actual Game of Life
 
 var BOARD_WIDTH = 64;
@@ -337,21 +364,19 @@ var TICK = 100;
 
 var board = [];
 
-var time = new Date().getTime();
-var timeSinceTick = 0;
-function gameLoop(){
-  requestAnimationFrame(gameLoop);
-  var now = new Date().getTime();
-  var dt = now - time;
-  time = now;
-  timeSinceTick += dt;
+var patterns = [[[0,0]],[[-1,1],[0,1],[1,1],[1,0],[0,-1]]];
+var pattern = patterns[1];
+function placeCells(){
 
-  if(timeSinceTick > TICK){
-    timeSinceTick -= TICK;
+  for (var i = 0; i < pattern.length; i++) {
+    
+    var [x,y] = pattern[i];
+    board[mouseX+x][mouseY+y] = true;
+
   }
-
-  render();
 }
+
+//Game loops
 
 function render(){
   
@@ -370,8 +395,27 @@ function render(){
   }
 }
 
+var time = new Date().getTime();
+var timeSinceTick = 0;
+
+function gameLoop(){
+  requestAnimationFrame(gameLoop);
+  var now = new Date().getTime();
+  var dt = now - time;
+  time = now;
+  timeSinceTick += dt;
+
+  if(timeSinceTick > TICK){
+    timeSinceTick -= TICK;
+  }
+
+  render();
+}
+
+
+
 $(document).ready(function() {
-  
+
   setTimeout(function(){
     gameCanvas.width = gameCanvas.parentNode.offsetWidth;
     gameCanvas.height = gameCanvas.parentNode.offsetHeight;
@@ -385,6 +429,8 @@ $(document).ready(function() {
   }
 
   window.addEventListener('resize', onResize, false);
+  window.addEventListener("mousemove", onMouseMove, false);
+  window.addEventListener("mousedown", onMouseDown, false);
 
   gameLoop();
 
